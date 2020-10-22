@@ -40,8 +40,13 @@ namespace ContactsServer.Controllers
         public IActionResult AddContact([FromBody] ContactDTO newContact)
         {
             try {
-                if(string.IsNullOrWhiteSpace(newContact.FirstName) && string.IsNullOrWhiteSpace(newContact.LastName)
-                    && string.IsNullOrWhiteSpace(newContact.Email))
+                if(
+                    (string.IsNullOrWhiteSpace(newContact.FirstName) 
+                        && string.IsNullOrWhiteSpace(newContact.LastName)
+                        && string.IsNullOrWhiteSpace(newContact.Email)) 
+                    || newContact.FirstName.Length > 32 
+                    || newContact.LastName.Length > 32
+                    || newContact.Email.Length > 128)
                 {
                     return BadRequest();
                 }

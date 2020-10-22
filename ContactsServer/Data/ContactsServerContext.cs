@@ -56,27 +56,10 @@ namespace ContactsServer.Data
             modelBuilder.Entity<Contact>(entity => 
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.FirstName);
-                entity.Property(e => e.LastName);
-                entity.Property(e => e.Email);
+                entity.Property(e => e.FirstName).HasMaxLength(32);
+                entity.Property(e => e.LastName).HasMaxLength(32);
+                entity.Property(e => e.Email).HasMaxLength(128);
             });
-
-            //modelBuilder.Entity<Contact>().HasData(
-            //    new Contact
-            //    {
-            //        Id = 1,
-            //        FirstName = "Ronny",
-            //        LastName = "Andersson",
-            //        Email = "ronny@ronny.com"
-            //    },
-            //    new Contact
-            //    {
-            //        Id = 2,
-            //        FirstName = "Lars",
-            //        LastName = "Anderzon",
-            //        Email = "lars@ronny.com"
-            //    }
-            //);
         }
     }
 }

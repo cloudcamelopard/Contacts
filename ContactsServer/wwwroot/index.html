@@ -155,10 +155,13 @@
                     },
                     error: function (xhr) {
                         if (xhr.status !== 401) {
+                            clearAddContactFields();
                             alert("Error: " + xhr.status);
+                        } else {
+                            clearAddContactFields();
+                            logOut();
+                            togglePanels();
                         }
-                        logOut();
-                        togglePanels();
                     }
                 });
         }
