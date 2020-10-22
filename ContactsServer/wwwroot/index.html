@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+
+    <style>
+        #contactsListing {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        #contactsListing td, #contactsListing th {
+            padding: 5px 5px 5px 5px;
+            border: 1px solid gray;
+            text-align: left;
+        }
+        #addContact {
+            padding: 40px 0px 0px 0px;
+        }
+        #addContact th {
+            text-align: left;
+        }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        //let token = null;
+
+        function togglePanels() {
+            $('#errorPanel').hide();
+            $('#loginPanel').hide();
+            $('#listContactsPanel').hide();
+            $('#addContactPanel').hide();
+
+            if (typeof (Storage) === "undefined") {
+                $('#errorPanel').show();
+                $('#errorMessage').text('Do not support storage, please update browser');
+            }
+            let token = localStorage.getItem("token");
+            if (token === null) {
+                $('#loginPanel').show();
+            }
+            else {
+                GetContacts();    
+                $('#listContactsPanel').show();
+
+            }
+        }
+
+        function logOut() {
+            localStorage.removeItem('token');
+            togglePanels();
+        }
+
+        function disableLoginPanel() {
+            $('#logInButton').prop('disabled', true);
+            $('#userNameInput').prop('disabled', true);
+            $('#passwordInput').prop('disabled', true);
+        }
+        function enableLoginPanel() {
+            $('#logInButton').prop('disabled', false);
+            $('#userNameInput').prop('disabled', false).val('');
+            $('#passwordInput').prop('disabled', false).val('');
+        }
+
+        function clearAddContactFields() {
+            $('#firstNameInput').val('');
+            $('#lastNameInput').val('');
+            $('#emailInput').val('');
+        }
+
+        function logIn(userName, password) {
+            disableLoginPanel();
+            $.ajax(
+                {
+                    type: 'POST',
+                    url: 'user/login',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ UserName: userName, Password: password }),
+                    dataType: "json",
+                    success: function (result) {
+                        if (result === "Error") {
+                            alert("Failed to sign in");
+                            enableLoginPanel();
+                        } else {
+                            localStorage.setItem("token", result.token);
+                            togglePanels();
+                            enableLoginPanel();
+                        }
+                    },
+                    error: function(xhr) {
+                        alert("An error occured: " + xhr.status + " " + xhr.statusText);
+                        enableLoginPanel();
+                    }
+                });
+        }
+
+        
+        function GetContacts() {
+            let token = localStorage.getItem('token');
+            $.ajax({
+                type: "GET",
+                url: "contacts",
+                headers: {
+                    Authorization: 'Bearer ' + token
+                },
+                dataType: 'json',
+                success: function (result) {
+                    //alert(result);
+                    buildContactsTable(result, $('#contactsListing  > tbody'));
+                },
+                error: function (xhr) {
+                    alert("An error occured: " + xhr.status + " " + xhr.statusText);
+                    logOut();
+                    togglePanels();
+                }
+            });
+        }
+
+        function buildContactsTable(list, selector) {
+            selector.empty();
+            
+            for (var i = 0; i < list.length; i++) {
+                var row = $('<tr/>');
+                row.append($('<td/>').html(list[i].firstName));
+                row.append($('<td/>').html(list[i].lastName));
+                row.append($('<td/>').html(list[i].email));
+
+                // Adding each row to the table 
+                $(selector).append(row);
+            }
+        }
+
+        function addContact(firstName, lastName, eMail) {
+            let token = localStorage.getItem('token');
+            $.ajax(
+                {
+                    type: "POST",
+                    url: 'contacts',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ FirstName: firstName, LastName: lastName, Email: eMail }),
+                    headers: {
+                        Authorization: 'Bearer ' + token
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        GetContacts();
+                        clearAddContactFields();
+                    },
+                    error: function (xhr) {
+                        alert("An error occured: " + xhr.status + " " + xhr.statusText);
+                        logOut();
+                        togglePanels();
+                    }
+                });
+        }
+
+    </script>
+</head>
+<body>
+
+    <div id="errorPanel" style="display:none">
+        <h1>Error</h1>
+        <p id="errorMessage"></p>
+    </div>
+    
+    <div id="loginPanel" style="display:none">
+        <h1>Login</h1>
+        <table>
+            <tr><td>Username</td></tr>
+            <tr><td><input type="text" id="userNameInput" /></td></tr>
+            <tr><td>Password</td></tr>
+            <tr><td><input type="password" id="passwordInput" /></td></tr>
+            <tr><td><button style="padding:10px 20px 10px 20px;margin-top:10px;" id="logInButton">Log in</button></td></tr>
+        </table>
+    </div>
+    
+    <div id="listContactsPanel" style="display:none;">
+        <h1>Contacts</h1>
+        <button id="logOutButton">Log out</button>
+        <button id="refreshButton">Refresh</button>
+        <button id="showAddContact">Add contact</button>
+        <div id="addContact" style="display:none;border:1px solid gray;margin:4px;padding:8px;background-color:lightgray;">
+            <h2>Add new contact</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Firstname</th>
+                        <th>Lastname</th>
+                        <th colspan="2">E-mail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" id="firstNameInput" /></td>
+                        <td><input type="text" id="lastNameInput" /></td>
+                        <td><input type="text" id="emailInput" /></td>
+                        <td colspan="3" align="right">
+                            <button id="addContactButton">Add</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            
+            
+            
+        </div>
+        <table id="contactsListing" style="border:1px solid black;">
+            <thead>
+                <tr>
+                    <th>First name</th>
+                    <th>Last name</th>
+                    <th>E-mail</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    
+    <div id="addContactPanel" style="display:none">
+        Add contact - Cancel
+    </div>
+    
+    <script>
+
+        $(document).ready(function () {
+            togglePanels();
+
+            $('#logOutButton').click(function () {
+                logOut();
+            });
+
+            $('#logInButton').click(function () {
+                logIn($('#userNameInput').val(), $('#passwordInput').val());
+            });
+
+            $('#refreshButton').click(function () {
+                GetContacts();
+            });
+
+            $('#showAddContact').click(function () {
+                $('#addContact').show();
+            });
+
+            $('#addContactButton').click(function () {
+                addContact($('#firstNameInput').val(), $('#lastNameInput').val(), $('#emailInput').val());
+            });
+        });
+
+    </script>
+</body>
+</html>
