@@ -24,11 +24,13 @@ namespace ContactsServer.Controllers
     {
         private readonly IConfiguration _config;
         private readonly ContactsServerContext _data;
+        private readonly IAuthService _authService;
 
-        public UserController(ContactsServerContext db, IConfiguration config)
+        public UserController(ContactsServerContext db, IConfiguration config, IAuthService authService)
         {
             _data = db;
             _config = config;
+            _authService = authService;
          
         }
 
@@ -43,9 +45,9 @@ namespace ContactsServer.Controllers
                 if (login.UserName == null || login.Password == null) return response;
                 User user = _data.Users.FirstOrDefault(u => u.UserName == login.UserName);
                 if (user == null) return response;
-                var ok = new AuthService().VerifyPassword(login.Password, user.Hash, user.Salt);
+                var ok = _authService.VerifyPassword(login.Password, user.Hash, user.Salt);
                 if (!ok) return response;
-                var jwtToken = GenerateJWTToken(user);
+                var jwtToken = _authService.GenerateJWTToken(user);
                 response = Ok(new
                 {
                     token = jwtToken,
@@ -58,40 +60,27 @@ namespace ContactsServer.Controllers
             }
             
             return response;
-
-            //IActionResult response = Unauthorized();
-            //User user = AuthenticateUser(login);
-            //if (user != null)
-            //{
-            //    var tokenString = GenerateJWTToken(user);
-            //    response = Ok(new
-            //    {
-            //        token = tokenString,
-            //        userDetails = user,
-            //    });
-            //}
-            //return response;
         }
 
-        string GenerateJWTToken(User userInfo)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, userInfo.UserName),
-                new Claim("fullName", userInfo.FullName.ToString()),
-                new Claim("role", userInfo.UseRole),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            };
-            var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(30),
-            signingCredentials: credentials
-            );
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        //string GenerateJWTToken(User userInfo)
+        //{
+        //    var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]));
+        //    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        //    var claims = new[]
+        //    {
+        //        new Claim(JwtRegisteredClaimNames.Sub, userInfo.UserName),
+        //        new Claim("fullName", userInfo.FullName.ToString()),
+        //        new Claim("role", userInfo.UseRole),
+        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        //    };
+        //    var token = new JwtSecurityToken(
+        //    issuer: _config["Jwt:Issuer"],
+        //    audience: _config["Jwt:Audience"],
+        //    claims: claims,
+        //    expires: DateTime.Now.AddMinutes(30),
+        //    signingCredentials: credentials
+        //    );
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
     }
 }

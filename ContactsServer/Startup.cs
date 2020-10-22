@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ContactsServer.Data;
+using ContactsServer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -54,6 +55,8 @@ namespace ContactsServer
 
             services.AddDbContext<ContactsServerContext>(options => options.UseSqlServer(connection));
             //services.AddScoped<IContactsServerContext, ContactsServerContext>();
+            services.AddScoped<IAuthService, AuthService>();
+
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
                 options.RequireHttpsMetadata = false;
