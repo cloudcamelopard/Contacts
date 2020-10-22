@@ -24,7 +24,7 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-        //let token = null;
+        const baseUrl = "https://localhost:44394/";
 
         function togglePanels() {
             $('#errorPanel').hide();
@@ -74,7 +74,7 @@
             $.ajax(
                 {
                     type: 'POST',
-                    url: 'user/login',
+                    url: baseUrl + 'user/login',
                     contentType: 'application/json',
                     data: JSON.stringify({ UserName: userName, Password: password }),
                     dataType: "json",
@@ -88,8 +88,12 @@
                             enableLoginPanel();
                         }
                     },
-                    error: function(xhr) {
-                        alert("An error occured: " + xhr.status + " " + xhr.statusText);
+                    error: function (xhr) {
+                        if (xhr.status === 401) {
+                            alert("Failed to log in!")
+                        } else {
+                            alert("Error: " + xhr.status);
+                        }
                         enableLoginPanel();
                     }
                 });
@@ -100,7 +104,7 @@
             let token = localStorage.getItem('token');
             $.ajax({
                 type: "GET",
-                url: "contacts",
+                url: baseUrl + "contacts",
                 headers: {
                     Authorization: 'Bearer ' + token
                 },
@@ -110,7 +114,9 @@
                     buildContactsTable(result, $('#contactsListing  > tbody'));
                 },
                 error: function (xhr) {
-                    alert("An error occured: " + xhr.status + " " + xhr.statusText);
+                    if (xhr.status !== 401) {
+                        alert("Error: " + xhr.status);
+                    }
                     logOut();
                     togglePanels();
                 }
@@ -136,7 +142,7 @@
             $.ajax(
                 {
                     type: "POST",
-                    url: 'contacts',
+                    url: baseUrl + 'contacts',
                     contentType: 'application/json',
                     data: JSON.stringify({ FirstName: firstName, LastName: lastName, Email: eMail }),
                     headers: {
@@ -148,7 +154,9 @@
                         clearAddContactFields();
                     },
                     error: function (xhr) {
-                        alert("An error occured: " + xhr.status + " " + xhr.statusText);
+                        if (xhr.status !== 401) {
+                            alert("Error: " + xhr.status);
+                        }
                         logOut();
                         togglePanels();
                     }
