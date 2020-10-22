@@ -36,8 +36,6 @@ namespace ContactsServer.Services
             var hashPassword = Convert.ToBase64String(rfc2898DeriveBytes.GetBytes(256));
 
             return (hashPassword, salt);
-            //HashSalt hashSalt = new HashSalt { Hash = hashPassword, Salt = salt };
-            //return hashSalt;
         }
 
         public string GenerateJWTToken(User user)
