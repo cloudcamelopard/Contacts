@@ -33,19 +33,24 @@ namespace ContactsServer.Controllers
                 LastName = c.LastName,
                 Email = c.Email
             }).ToArray());
-            //return Ok("This is a response from Admin method");
         }
 
         [HttpPost]
         [Authorize(Policy = Policies.Admin)]
         public IActionResult AddContact([FromBody] ContactDTO newContact)
         {
-            try { 
+            try {
+                if(string.IsNullOrWhiteSpace(newContact.FirstName) && string.IsNullOrWhiteSpace(newContact.LastName)
+                    && string.IsNullOrWhiteSpace(newContact.Email))
+                {
+                    return BadRequest();
+                }
+
                 var res = _data.Contacts.Add(new Contact { FirstName = newContact.FirstName, LastName = newContact.LastName, Email = newContact.Email });
                 _data.SaveChanges();
-                return Ok(new { Id = res.Entity.Id });
+                return Ok(new { res.Entity.Id });
             }
-            catch(Exception e)
+            catch(Exception)
             {
                 return StatusCode(500);
             }
