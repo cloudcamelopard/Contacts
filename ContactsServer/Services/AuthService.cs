@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace ContactsServer.Services
 {
 
-    // TODO: Add interface
+    // TODO: Add interface and add to DI
     public class AuthService
     {
         public bool VerifyPassword(string enteredPassword, string storedHash, string storedSalt)
