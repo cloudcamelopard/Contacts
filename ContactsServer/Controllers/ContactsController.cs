@@ -15,9 +15,9 @@ namespace ContactsServer.Controllers
     [ApiController]
     public class ContactsController: ControllerBase
     {
-        private readonly ContactsServerContext _data;
+        private readonly IContactsServerContext _data;
 
-        public ContactsController(ContactsServerContext data)
+        public ContactsController(IContactsServerContext data)
         {
             _data = data;
         }

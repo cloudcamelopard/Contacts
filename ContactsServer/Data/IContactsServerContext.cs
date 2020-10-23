@@ -8,5 +8,7 @@ namespace ContactsServer.Data
         DbSet<User> Users { get; set; }
 
         DbSet<Contact> Contacts { get; set; }
+
+        int SaveChanges();
     }
 }

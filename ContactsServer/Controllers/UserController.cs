@@ -15,16 +15,13 @@ namespace ContactsServer.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IConfiguration _config;
-        private readonly ContactsServerContext _data;
+        private readonly IContactsServerContext _data;
         private readonly IAuthService _authService;
 
-        public UserController(ContactsServerContext db, IConfiguration config, IAuthService authService)
+        public UserController(IContactsServerContext db, IAuthService authService)
         {
             _data = db;
-            _config = config;
             _authService = authService;
-         
         }
 
         [HttpPost("login")]
